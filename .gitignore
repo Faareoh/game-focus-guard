@@ -1,0 +1,14 @@
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.pdb
+*.ipch
+*.ilk
+*.exp
+*.lib
+*.dll.recipe
+FocusTool.Hook/build/
+_publish_test/
