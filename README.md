@@ -1,119 +1,101 @@
-# 防止游戏失焦工具 / Game Focus Guard
+# Game Focus Guard
 
-`Game Focus Guard` 是一个本地 Windows 小工具，用来降低游戏窗口失去焦点、切到后台后暂停，或者因焦点变化导致交互异常的影响。
+A minimal Windows utility that prevents games from losing focus or pausing when they move to the background.
 
-它主要面向需要保持窗口焦点的游戏场景，例如 **《地平线6》**、多显示器游戏环境，以及容易因为误点、切窗或后台操作而中断的桌面游戏。
+Built for scenarios like **Forza Horizon 6**, multi-monitor setups, and any game that reacts poorly to focus loss — accidental clicks, alt-tabs, or background activity that interrupts gameplay.
 
-## 项目简介
+## Features
 
-这个项目采用一个最小化的 WinForms 桌面界面，加上一个原生 hook 组件，实现对当前目标窗口的焦点保护控制。
+- **Focus protection** — intercepts window deactivation messages so the target game stays active
+- **Global hotkey** — toggle protection from anywhere with a configurable shortcut (default: `Ctrl+Shift+Alt+T`)
+- **System tray** — closing the window minimizes to tray; the app keeps running silently in the background
+- **Hotkey rebinding** — change the shortcut directly in the UI; saved automatically
+- **Single instance** — launching the app twice brings the existing window back to focus
+- **Localization** — UI available in English, French and Chinese (saved across sessions)
 
-当前版本支持：
+## Quick Start
 
-- 单实例运行
-- 通过按钮或全局热键启用/关闭焦点保护
-- 在界面内重新绑定热键
-- 自动保存热键设置，并在下次启动时恢复
-- 显示当前热键、候选窗口、目标窗口、hook 状态和启用状态
+1. Download the `win-x64` archive from the [Releases](../../releases) page
+2. Extract to any local folder
+3. Run `FocusTool.Ui.exe` **as Administrator**
+4. Switch to your target game window
+5. Press `Ctrl+Shift+Alt+T` (or click the main button) to toggle focus protection
 
-目标很直接：
+> **Why Administrator?** The app uses low-level Windows hooks (`SetWindowsHookEx`) and a global hotkey (`RegisterHotKey`). These require elevated privileges when targeting protected processes.
 
-- 工具尽量小
-- 使用流程尽量简单
-- 发布包尽量做到解压即可运行
+### Changing the hotkey
 
-## 适用场景
+1. Click **Change Hotkey**
+2. Press the new key combination
+3. The hotkey takes effect immediately and is saved automatically
+4. Press `Esc` during rebind to cancel
 
-本工具适合本地测试和日常使用中这些情况：
+### System tray
 
-- 类似 **《地平线6》** 这样对焦点变化比较敏感的游戏
-- 多显示器环境下容易误切出窗口的游戏
-- 想尽量减少窗口失焦、后台暂停或输入中断影响的游戏场景
+Clicking the **×** button minimizes the app to the system tray — it keeps running and protecting the target window. To restore the window, double-click the tray icon or right-click → **Show window**. To exit completely, right-click → **Quit**.
 
-需要说明的是，实际效果仍然会因游戏本身的渲染模式、输入处理方式、反作弊或防篡改限制而有所不同。
+## How It Works
 
-## 快速开始
+The app loads a native C++ hook DLL (`FocusTool.Hook.dll`) and installs Windows hooks on the target game's thread:
 
-如果你使用已经打好的发布包：
+| Hook | Purpose |
+|---|---|
+| `WH_CALLWNDPROC` | Intercepts focus-loss messages (`WM_ACTIVATE`, `WM_KILLFOCUS`…) and installs a one-shot subclass to swallow them |
+| `WH_KEYBOARD_LL` | Suppresses Alt+Tab while the target window is in the foreground |
 
-1. 下载 `win-x64` 压缩包
-2. 解压到任意本地目录
-3. 以管理员权限运行 `FocusTool.Ui.exe`
-4. 先把目标游戏窗口切到前台
-5. 再使用热键或主界面的主按钮启用/关闭焦点保护
+When you activate protection, the app also calls `AllowSetForegroundWindow` to let the game reclaim focus if another window tries to steal it.
 
-默认热键：
+## Limitations
 
-```text
-Ctrl + Shift + Alt + T
-```
+- Prototype-level quality — suitable for personal use and local experimentation
+- One target window at a time
+- No installer — extract and run
+- Compatibility varies by game (rendering mode, anti-cheat, input handling)
+- Some games with kernel-level anti-cheat (EAC, BattlEye) may detect or block the hook injection
 
-修改热键的方法：
+## Building from Source
 
-1. 点击 `改热键`
-2. 按下新的组合键
-3. 新热键会立即生效并自动保存
-4. 在重绑过程中按 `Esc` 可以取消
+**Requirements:**
+- Windows 10 x64 or later
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [PowerShell 7+](https://github.com/PowerShell/PowerShell) (`pwsh`)
+- Visual Studio 2022 with the **C++ build tools** workload  
+  (Community, Professional, Enterprise or Build Tools edition)
 
-如果程序已经在运行，再次启动时会直接唤醒已有实例，而不是再打开一个新的窗口。
-
-## 从源码构建
-
-环境要求：
-
-- Windows
-- 带 Windows 桌面支持的 .NET SDK
-- Visual Studio 2022 Build Tools 或 Visual Studio 2022 Community，且已安装 C++ 工具链
-
-构建命令：
-
+**Build:**
 ```powershell
 dotnet build .\FocusTool.Ui\FocusTool.Ui.csproj
 ```
 
-说明：
+This compiles the C# UI and automatically triggers `Build-Hook.ps1`, which locates `vcvars64.bat`, compiles `focus_hook.cpp` with MSVC, and copies the DLL to the output folder.
 
-- 推荐直接把 `FocusTool.Ui.csproj` 作为构建入口
-- UI 项目会在构建后自动调用 `FocusTool.Hook\Build-Hook.ps1`
-- 构建脚本会使用本机 Visual Studio C++ 工具链编译原生 hook DLL，并复制到 UI 输出目录
-
-构建后运行：
-
+**Run** (must be Administrator):
 ```powershell
 .\FocusTool.Ui\bin\Debug\net10.0-windows\FocusTool.Ui.exe
 ```
 
-## 仓库结构
+**Publish** (self-contained, redistributable):
+```powershell
+dotnet publish .\FocusTool.Ui\FocusTool.Ui.csproj -c Release -r win-x64 --self-contained
+```
 
-- `FocusTool.Ui/`
-  - WinForms 桌面界面
-  - 热键管理
-  - 单实例控制
-  - 配置持久化
-- `FocusTool.Hook/`
-  - 原生 hook 组件
-  - 原生 DLL 构建脚本
+## Repository Structure
 
-## 当前限制
-
-- 当前仍是一个原型版本，主要面向本地实验和实际场景验证
-- 一次只处理一个目标窗口
-- 暂时不提供安装器
-- 不保证对所有游戏都完全兼容
-
-## 英文摘要
-
-Game Focus Guard is a small Windows utility for reducing the impact of games losing focus or pausing in the background.
-
-It provides:
-
-- a minimal desktop UI
-- single-instance behavior
-- a configurable global hotkey
-- hotkey persistence across launches
-- focus-protection toggling for a selected foreground window
-
-It is suitable for scenarios such as **Forza Horizon 6**, multi-monitor gaming, and other games that react poorly to focus loss.
+```
+game-focus-guard/
+├── FocusTool.Ui/          # WinForms .NET 10 application
+│   ├── Form1.cs/.Designer.cs   — main UI + language selector + tray
+│   ├── HookController.cs       — loads the native DLL, installs hooks
+│   ├── HotKeyService.cs        — global hotkey registration
+│   ├── Strings.cs              — all localized strings (EN/FR/ZH)
+│   ├── Language.cs             — Language enum
+│   ├── LanguageStore.cs        — language preference persistence
+│   ├── HotKeySettingsStore.cs  — hotkey settings (JSON)
+│   └── generate-icon.ps1       — generates icon.ico via GDI+
+└── FocusTool.Hook/        # Native C++20 hook DLL
+    ├── focus_hook.cpp          — hook procedures
+    └── Build-Hook.ps1          — MSVC build script
+```
 
 ## License
 
