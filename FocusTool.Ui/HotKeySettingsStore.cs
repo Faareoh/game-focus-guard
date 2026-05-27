@@ -20,27 +20,27 @@ internal sealed class HotKeySettingsStore
         {
             if (!File.Exists(_settingsPath))
             {
-                return new HotKeySettingsLoadResult(HotKeyBinding.Default, "Using default hotkey");
+                return new HotKeySettingsLoadResult(HotKeyBinding.Default, Strings.UsingDefaultHotkey);
             }
 
             var json = File.ReadAllText(_settingsPath);
             var dto = JsonSerializer.Deserialize<HotKeySettingsDto>(json);
             if (dto == null)
             {
-                return new HotKeySettingsLoadResult(HotKeyBinding.Default, "Settings file invalid, using default hotkey");
+                return new HotKeySettingsLoadResult(HotKeyBinding.Default, Strings.SettingsFileInvalid);
             }
 
             var binding = new HotKeyBinding((NativeMethods.HotKeyModifiers)dto.Modifiers, (Keys)dto.Key);
             if (!binding.IsValid)
             {
-                return new HotKeySettingsLoadResult(HotKeyBinding.Default, "Saved hotkey invalid, using default hotkey");
+                return new HotKeySettingsLoadResult(HotKeyBinding.Default, Strings.SavedHotkeyInvalid);
             }
 
-            return new HotKeySettingsLoadResult(binding, "Loaded saved hotkey");
+            return new HotKeySettingsLoadResult(binding, Strings.LoadedSavedHotkey);
         }
         catch (Exception ex)
         {
-            return new HotKeySettingsLoadResult(HotKeyBinding.Default, $"Failed to load settings, using default hotkey: {ex.Message}");
+            return new HotKeySettingsLoadResult(HotKeyBinding.Default, Strings.FailedLoadSettings(ex.Message));
         }
     }
 

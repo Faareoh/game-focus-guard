@@ -1,0 +1,88 @@
+name: Build & Release
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Déclencheurs
+#   • push sur main / PR → build de vérification (CI)
+#   • push d'un tag v* → build Release + publication GitHub
+# ─────────────────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write   # nécessaire pour créer des releases GitHub
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest   # seul OS supporté (WinForms + MSVC natif)
+
+    steps:
+      # ── 1. Sources ──────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Runtime .NET ─────────────────────────────────────────────────────
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # ── 3a. Build CI (branches / PRs) ───────────────────────────────────────
+      # Compile uniquement pour détecter les erreurs ; pas d'artefact produit.
+      - name: Build — vérification CI
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        shell: pwsh
+        run: dotnet build .\FocusTool.Ui\FocusTool.Ui.csproj -c Release
+
+      # ── 3b. Publish (tags v* uniquement) ────────────────────────────────────
+      # Produit un exécutable autonome win-x64 (runtime .NET inclus).
+      # Déclenche aussi Build-Hook.ps1 via AfterTargets="Publish" → compile
+      # focus_hook.cpp avec MSVC et copie FocusTool.Hook.dll dans le dossier.
+      - name: Publish win-x64 self-contained
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          dotnet publish .\FocusTool.Ui\FocusTool.Ui.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained `
+            -o .\publish\win-x64
+
+      # ── 4. Sanity-check : DLL native présente ───────────────────────────────
+      - name: Vérifier FocusTool.Hook.dll
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $dll = '.\publish\win-x64\FocusTool.Hook.dll'
+          if (-not (Test-Path $dll)) {
+            throw "FocusTool.Hook.dll absent du dossier de publication — le build natif a échoué."
+          }
+          Write-Host "✓ FocusTool.Hook.dll trouvé ($('{0:N0}' -f (Get-Item $dll).Length) octets)"
+
+      # ── 5. Package ZIP ──────────────────────────────────────────────────────
+      - name: Créer l'archive ZIP
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $zip = "GameFocusGuard-${{ github.ref_name }}-win-x64.zip"
+          Compress-Archive -Path .\publish\win-x64\* -DestinationPath $zip
+          Write-Host "✓ Archive : $zip ($('{0:N0}' -f (Get-Item $zip).Length) octets)"
+
+      # ── 6. GitHub Release ───────────────────────────────────────────────────
+      # Les notes de release sont générées automatiquement depuis les commits
+      # entre le tag précédent et le tag courant.
+      # Les tags contenant un tiret (v1.0.0-rc1, v1.0.0-beta) sont marqués
+      # automatiquement comme pré-release.
+      - name: Créer la GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Game Focus Guard ${{ github.ref_name }}"
+          files: "GameFocusGuard-${{ github.ref_name }}-win-x64.zip"
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}

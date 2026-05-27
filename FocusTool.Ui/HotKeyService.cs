@@ -18,7 +18,7 @@ internal sealed class HotKeyService
 
     public bool IsRegistered { get; private set; }
 
-    public string LastStatus { get; private set; } = "Unregistered";
+    public string LastStatus { get; private set; } = Strings.Unregistered;
 
     public bool TryRegisterCurrent(out string status)
     {
@@ -34,7 +34,7 @@ internal sealed class HotKeyService
 
         NativeMethods.UnregisterHotKey(_windowHandle, _hotKeyId);
         IsRegistered = false;
-        LastStatus = "Unregistered";
+        LastStatus = Strings.Unregistered;
     }
 
     public bool TryUpdateBinding(HotKeyBinding newBinding, out string status)
@@ -59,11 +59,11 @@ internal sealed class HotKeyService
             if (restored)
             {
                 CurrentBinding = previousBinding;
-                status = $"{status} | Restored previous binding";
+                status = $"{status} | {Strings.RestoredPreviousBinding}";
             }
             else
             {
-                status = $"{status} | Failed to restore previous binding: {restoreStatus}";
+                status = $"{status} | {Strings.FailedRestorePreviousBinding}: {restoreStatus}";
             }
         }
 
@@ -74,7 +74,7 @@ internal sealed class HotKeyService
     {
         if (!binding.IsValid)
         {
-            status = "Invalid hotkey";
+            status = Strings.InvalidHotkey;
             LastStatus = status;
             return false;
         }
@@ -83,7 +83,7 @@ internal sealed class HotKeyService
         {
             CurrentBinding = binding;
             IsRegistered = true;
-            status = $"Registered {binding.ToDisplayString()}";
+            status = Strings.RegisteredHotkey(binding.ToDisplayString());
             LastStatus = status;
             return true;
         }
@@ -91,8 +91,8 @@ internal sealed class HotKeyService
         var error = Marshal.GetLastWin32Error();
         status = error switch
         {
-            1409 => $"Hotkey already registered by another instance or program ({binding.ToDisplayString()})",
-            _ => $"RegisterHotKey failed. Win32={error}"
+            1409 => Strings.HotkeyAlreadyRegistered(binding.ToDisplayString()),
+            _ => Strings.RegisterHotKeyFailed(error)
         };
         LastStatus = status;
         return false;

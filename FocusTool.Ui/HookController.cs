@@ -31,18 +31,18 @@ internal sealed class HookController : IDisposable
     private IntPtr _currentTarget;
     private uint _currentProcessId;
     private uint _currentThreadId;
-    private string _currentProcessName = "None";
-    private string _currentWindowTitle = "None";
+    private string _currentProcessName = Strings.None;
+    private string _currentWindowTitle = Strings.None;
 
     private IntPtr _candidateWindow;
     private uint _candidateProcessId;
     private uint _candidateThreadId;
-    private string _candidateProcessName = "None";
-    private string _candidateWindowTitle = "None";
+    private string _candidateProcessName = Strings.None;
+    private string _candidateWindowTitle = Strings.None;
 
     private readonly uint _allowFocusMessage;
     private bool _disposed;
-    private string _lastError = "Idle";
+    private string _lastError = Strings.Idle;
 
     public HookController()
     {
@@ -104,14 +104,14 @@ internal sealed class HookController : IDisposable
 
         if (root == IntPtr.Zero)
         {
-            _lastError = "No usable target window";
+            _lastError = Strings.NoUsableTarget;
             return;
         }
 
         if (IsEnabled && root == _currentTarget)
         {
             Disable();
-            _lastError = "Disabled current target";
+            _lastError = Strings.DisabledCurrentTarget;
             return;
         }
 
@@ -130,7 +130,7 @@ internal sealed class HookController : IDisposable
 
         UnhookAll();
         ClearCurrentTarget();
-        _lastError = "Disabled";
+        _lastError = Strings.Disabled;
     }
 
     private void EnableForTarget(IntPtr targetWindow)
@@ -141,7 +141,7 @@ internal sealed class HookController : IDisposable
         var root = NativeMethods.GetAncestor(targetWindow, NativeMethods.GetAncestorFlags.GA_ROOT);
         if (root == IntPtr.Zero)
         {
-            _lastError = "Failed to resolve root window";
+            _lastError = Strings.FailedRootWindow;
             return;
         }
 
@@ -150,7 +150,7 @@ internal sealed class HookController : IDisposable
         if (_currentProcessId == 0 || _currentThreadId == 0)
         {
             ClearCurrentTarget();
-            _lastError = "Failed to resolve process or thread";
+            _lastError = Strings.FailedProcessOrThread;
             return;
         }
 
@@ -168,7 +168,7 @@ internal sealed class HookController : IDisposable
 
         if (_callWndHook == IntPtr.Zero || _callWndRetHook == IntPtr.Zero || _getMsgHook == IntPtr.Zero || _keyboardHook == IntPtr.Zero)
         {
-            _lastError = $"Failed to install hooks. Win32={Marshal.GetLastWin32Error()}";
+            _lastError = Strings.FailedInstallHooks(Marshal.GetLastWin32Error());
             Disable();
             return;
         }
@@ -182,7 +182,7 @@ internal sealed class HookController : IDisposable
             150,
             out _);
 
-        _lastError = "Enabled";
+        _lastError = Strings.Enabled;
     }
 
     private void EnsureHookDllLoaded()
@@ -252,15 +252,15 @@ internal sealed class HookController : IDisposable
         _currentTarget = IntPtr.Zero;
         _currentProcessId = 0;
         _currentThreadId = 0;
-        _currentProcessName = "None";
-        _currentWindowTitle = "None";
+        _currentProcessName = Strings.None;
+        _currentWindowTitle = Strings.None;
     }
 
     private static string GetWindowTitle(IntPtr hwnd)
     {
         var builder = new StringBuilder(512);
         NativeMethods.GetWindowText(hwnd, builder, builder.Capacity);
-        return string.IsNullOrWhiteSpace(builder.ToString()) ? "(untitled)" : builder.ToString();
+        return string.IsNullOrWhiteSpace(builder.ToString()) ? Strings.Untitled : builder.ToString();
     }
 
     private static string TryGetProcessName(uint processId)
@@ -271,7 +271,7 @@ internal sealed class HookController : IDisposable
         }
         catch
         {
-            return "(unknown)";
+            return Strings.Unknown;
         }
     }
 
