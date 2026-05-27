@@ -193,6 +193,12 @@ internal sealed class HookController : IDisposable
         }
 
         var dllPath = Path.Combine(AppContext.BaseDirectory, HookDllName);
+        if (!File.Exists(dllPath))
+        {
+            throw new InvalidOperationException(
+                $"Native hook DLL not found: {dllPath}. The current build or release package is incomplete.");
+        }
+
         _hookModule = NativeMethods.LoadLibrary(dllPath);
         if (_hookModule == IntPtr.Zero)
         {

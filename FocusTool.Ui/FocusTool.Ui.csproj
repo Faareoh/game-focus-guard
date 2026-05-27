@@ -15,7 +15,11 @@
     <Version>0.1.0</Version>
   </PropertyGroup>
 
-  <Target Name="BuildNativeHook" AfterTargets="Build">
+  <Target Name="BuildNativeHookForBuild" AfterTargets="Build">
     <Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\FocusTool.Hook\Build-Hook.ps1&quot; &quot;$(TargetDir)&quot;" />
+  </Target>
+
+  <Target Name="BuildNativeHookForPublish" AfterTargets="Publish">
+    <Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\FocusTool.Hook\Build-Hook.ps1&quot; &quot;$(PublishDir)&quot;" />
   </Target>
 </Project>
