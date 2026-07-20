@@ -4,6 +4,8 @@
 
 它主要面向需要保持窗口焦点的游戏场景，例如 **《地平线6》**、多显示器游戏环境，以及容易因为误点、切窗或后台操作而中断的桌面游戏。
 
+[English README](./README.en.md)
+
 ## 项目简介
 
 这个项目采用一个最小化的 WinForms 桌面界面，加上一个原生 hook 组件，实现对当前目标窗口的焦点保护控制。
@@ -16,12 +18,6 @@
 - 自动保存热键设置，并在下次启动时恢复
 - 可选的主窗口始终置顶，并在下次启动时恢复
 - 显示当前热键、候选窗口、目标窗口、hook 状态和启用状态
-
-目标很直接：
-
-- 工具尽量小
-- 使用流程尽量简单
-- 发布包尽量做到解压即可运行
 
 ## 适用场景
 
@@ -119,20 +115,6 @@ dotnet build .\FocusTool.Ui\FocusTool.Ui.csproj
 - 一次只处理一个目标窗口
 - 暂时不提供安装器
 - 不保证对所有游戏都完全兼容
-
-## 英文摘要
-
-Game Focus Guard is a small Windows utility for reducing the impact of games losing focus or pausing in the background.
-
-It provides:
-
-- a minimal desktop UI
-- single-instance behavior
-- a configurable global hotkey
-- hotkey persistence across launches
-- focus-protection toggling for a selected foreground window
-
-It is suitable for scenarios such as **Forza Horizon 6**, multi-monitor gaming, and other games that react poorly to focus loss.
 
 ## License
 
