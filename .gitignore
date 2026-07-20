@@ -12,3 +12,5 @@ obj/
 *.dll.recipe
 FocusTool.Hook/build/
 _publish_test/
+_publish_singlefile/
+artifacts/

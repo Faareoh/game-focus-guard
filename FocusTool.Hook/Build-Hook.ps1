@@ -10,10 +10,24 @@ $OutputDir = $OutputDir.Trim().Trim('"').TrimEnd('\')
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $buildDir = Join-Path $scriptDir "build"
 $sourceFile = Join-Path $scriptDir "focus_hook.cpp"
-$vcVars = "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+$vswhereCandidates = @(
+    (Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"),
+    (Join-Path $env:ProgramFiles "Microsoft Visual Studio\Installer\vswhere.exe")
+)
+$vswhere = $vswhereCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 
+if (-not $vswhere) {
+    throw "vswhere.exe was not found. Install Visual Studio 2022 or Build Tools with the C++ workload."
+}
+
+$visualStudioPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+if (-not $visualStudioPath) {
+    throw "No Visual Studio installation with the x64 C++ toolchain was found."
+}
+
+$vcVars = Join-Path ($visualStudioPath | Select-Object -First 1) "VC\Auxiliary\Build\vcvars64.bat"
 if (-not (Test-Path $vcVars)) {
-    throw "vcvars64.bat not found: $vcVars"
+    throw "vcvars64.bat was not found: $vcVars"
 }
 
 New-Item -ItemType Directory -Force -Path $buildDir | Out-Null

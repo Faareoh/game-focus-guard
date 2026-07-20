@@ -8,6 +8,7 @@ public partial class Form1 : Form
     private readonly HotKeySettingsStore _settingsStore = new();
     private readonly System.Windows.Forms.Timer _statusTimer = new() { Interval = 250 };
     private HotKeyService? _hotKeyService;
+    private bool _isApplyingSettings;
     private bool _isWaitingForHotKey;
     private string _startupStatus = "Initializing";
 
@@ -21,6 +22,11 @@ public partial class Form1 : Form
     {
         var settings = _settingsStore.LoadOrDefault();
         _startupStatus = settings.StatusMessage;
+
+        _isApplyingSettings = true;
+        TopMost = settings.AlwaysOnTop;
+        alwaysOnTopCheckBox.Checked = settings.AlwaysOnTop;
+        _isApplyingSettings = false;
 
         _hotKeyService = new HotKeyService(Handle, HotKeyId, settings.Binding);
         if (!_hotKeyService.TryRegisterCurrent(out var registerStatus))
@@ -68,7 +74,7 @@ public partial class Form1 : Form
 
             if (_hotKeyService.TryUpdateBinding(newBinding, out var status))
             {
-                var path = _settingsStore.Save(newBinding);
+                var path = _settingsStore.Save(newBinding, TopMost);
                 _startupStatus = $"{status} | Saved to {path}";
                 _isWaitingForHotKey = false;
                 rebindHotKeyButton.Text = "改热键";
@@ -112,6 +118,7 @@ public partial class Form1 : Form
             $"Hotkey Registered: {_hotKeyService?.IsRegistered}{Environment.NewLine}" +
             $"Hotkey Status: {_hotKeyService?.LastStatus}{Environment.NewLine}" +
             $"UI Status: {_startupStatus}{Environment.NewLine}" +
+            $"Always On Top: {TopMost}{Environment.NewLine}" +
             $"Enabled: {snapshot.IsEnabled}{Environment.NewLine}" +
             $"Last Status: {snapshot.LastError}{Environment.NewLine}{Environment.NewLine}" +
             $"Candidate Handle: 0x{snapshot.CandidateWindow.Handle.ToInt64():X}{Environment.NewLine}" +
@@ -127,6 +134,29 @@ public partial class Form1 : Form
             $"GetMsg Hook: 0x{snapshot.Hooks.GetMsg.ToInt64():X}{Environment.NewLine}" +
             $"KeyboardLL Hook: 0x{snapshot.Hooks.KeyboardLl.ToInt64():X}{Environment.NewLine}{Environment.NewLine}" +
             "Logic: thread hooks + one-shot subclass + AllowFocus channel";
+    }
+
+    private void alwaysOnTopCheckBox_CheckedChanged(object? sender, EventArgs e)
+    {
+        if (_isApplyingSettings)
+        {
+            return;
+        }
+
+        TopMost = alwaysOnTopCheckBox.Checked;
+
+        try
+        {
+            var binding = _hotKeyService?.CurrentBinding ?? HotKeyBinding.Default;
+            var path = _settingsStore.Save(binding, TopMost);
+            _startupStatus = $"Always on top {(TopMost ? "enabled" : "disabled")} | Saved to {path}";
+        }
+        catch (Exception ex)
+        {
+            _startupStatus = $"Always on top {(TopMost ? "enabled" : "disabled")} | Failed to save: {ex.Message}";
+        }
+
+        RefreshStatus();
     }
 
     private void rebindHotKeyButton_Click(object? sender, EventArgs e)

@@ -10,16 +10,16 @@
     <Product>Game Focus Guard</Product>
     <Description>A local Windows utility for reducing focus loss and background pause issues in games such as Forza Horizon 6.</Description>
     <Company>FocusTool contributors</Company>
-    <AssemblyVersion>0.1.0.0</AssemblyVersion>
-    <FileVersion>0.1.0.0</FileVersion>
-    <Version>0.1.0</Version>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <FileVersion>0.2.0.0</FileVersion>
+    <Version>0.2.0</Version>
   </PropertyGroup>
 
   <Target Name="BuildNativeHookForBuild" AfterTargets="Build">
-    <Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\FocusTool.Hook\Build-Hook.ps1&quot; &quot;$(TargetDir)&quot;" />
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\FocusTool.Hook\Build-Hook.ps1&quot; &quot;$(TargetDir)&quot;" />
   </Target>
 
   <Target Name="BuildNativeHookForPublish" AfterTargets="Publish">
-    <Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\FocusTool.Hook\Build-Hook.ps1&quot; &quot;$(PublishDir)&quot;" />
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\FocusTool.Hook\Build-Hook.ps1&quot; &quot;$(PublishDir)&quot;" />
   </Target>
 </Project>

@@ -1,3 +1,6 @@
 namespace FocusTool.Ui;
 
-internal readonly record struct HotKeySettingsLoadResult(HotKeyBinding Binding, string StatusMessage);
+internal readonly record struct HotKeySettingsLoadResult(
+    HotKeyBinding Binding,
+    bool AlwaysOnTop,
+    string StatusMessage);

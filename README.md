@@ -14,6 +14,7 @@
 - 通过按钮或全局热键启用/关闭焦点保护
 - 在界面内重新绑定热键
 - 自动保存热键设置，并在下次启动时恢复
+- 可选的主窗口始终置顶，并在下次启动时恢复
 - 显示当前热键、候选窗口、目标窗口、hook 状态和启用状态
 
 目标很直接：
@@ -57,6 +58,8 @@ Ctrl + Shift + Alt + T
 
 如果程序已经在运行，再次启动时会直接唤醒已有实例，而不是再打开一个新的窗口。
 
+勾选 `始终置顶` 后，工具主窗口会保持在其他普通窗口上方。该设置会自动保存。
+
 ## 从源码构建
 
 环境要求：
@@ -82,6 +85,22 @@ dotnet build .\FocusTool.Ui\FocusTool.Ui.csproj
 ```powershell
 .\FocusTool.Ui\bin\Debug\net10.0-windows\FocusTool.Ui.exe
 ```
+
+## 构建便捷运行包
+
+仓库提供统一的发布脚本：
+
+```powershell
+.\Build-Release.ps1 -Version 0.2.0
+```
+
+脚本会生成自包含的 Windows x64 单文件程序，并将运行时必须独立存在的 `FocusTool.Hook.dll` 一并打包。最终压缩包只包含：
+
+- `FocusTool.Ui.exe`
+- `FocusTool.Hook.dll`
+- `LICENSE`
+
+用户无需预先安装 .NET Runtime。每个版本标签都通过 GitHub Actions 从同一份标签源码构建 Release，避免源码、标签和运行包不一致。
 
 ## 仓库结构
 

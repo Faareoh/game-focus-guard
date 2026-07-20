@@ -21,6 +21,7 @@ partial class Form1
         components = new System.ComponentModel.Container();
         toggleButton = new Button();
         rebindHotKeyButton = new Button();
+        alwaysOnTopCheckBox = new CheckBox();
         hotKeyLabel = new Label();
         statusTextBox = new TextBox();
         candidateLabel = new Label();
@@ -45,6 +46,17 @@ partial class Form1
         rebindHotKeyButton.Text = "改热键";
         rebindHotKeyButton.UseVisualStyleBackColor = true;
         rebindHotKeyButton.Click += rebindHotKeyButton_Click;
+        //
+        // alwaysOnTopCheckBox
+        //
+        alwaysOnTopCheckBox.AutoSize = true;
+        alwaysOnTopCheckBox.Location = new Point(522, 66);
+        alwaysOnTopCheckBox.Name = "alwaysOnTopCheckBox";
+        alwaysOnTopCheckBox.Size = new Size(75, 21);
+        alwaysOnTopCheckBox.TabIndex = 2;
+        alwaysOnTopCheckBox.Text = "始终置顶";
+        alwaysOnTopCheckBox.UseVisualStyleBackColor = true;
+        alwaysOnTopCheckBox.CheckedChanged += alwaysOnTopCheckBox_CheckedChanged;
         // 
         // hotKeyLabel
         // 
@@ -52,7 +64,7 @@ partial class Form1
         hotKeyLabel.Location = new Point(12, 67);
         hotKeyLabel.Name = "hotKeyLabel";
         hotKeyLabel.Size = new Size(145, 17);
-        hotKeyLabel.TabIndex = 2;
+        hotKeyLabel.TabIndex = 3;
         hotKeyLabel.Text = "当前热键: Ctrl+Shift+Alt+T";
         // 
         // statusTextBox
@@ -63,7 +75,7 @@ partial class Form1
         statusTextBox.ReadOnly = true;
         statusTextBox.ScrollBars = ScrollBars.Vertical;
         statusTextBox.Size = new Size(612, 258);
-        statusTextBox.TabIndex = 3;
+        statusTextBox.TabIndex = 5;
         // 
         // candidateLabel
         // 
@@ -79,6 +91,7 @@ partial class Form1
         AutoScaleDimensions = new SizeF(7F, 17F);
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(636, 386);
+        Controls.Add(alwaysOnTopCheckBox);
         Controls.Add(hotKeyLabel);
         Controls.Add(rebindHotKeyButton);
         Controls.Add(candidateLabel);
@@ -101,6 +114,7 @@ partial class Form1
 
     private Button toggleButton;
     private Button rebindHotKeyButton;
+    private CheckBox alwaysOnTopCheckBox;
     private Label hotKeyLabel;
     private TextBox statusTextBox;
     private Label candidateLabel;
