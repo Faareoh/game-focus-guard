@@ -87,7 +87,7 @@ Run the application after building:
 The repository provides a unified release script:
 
 ```powershell
-.\Build-Release.ps1 -Version 0.2.0
+.\Build-Release.ps1 -Version 0.3.0
 ```
 
 The script creates a self-contained Windows x64 single-file application and packages the native `FocusTool.Hook.dll`, which must remain as a separate runtime file. The final archive contains only:
