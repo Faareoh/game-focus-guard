@@ -87,7 +87,7 @@ dotnet build .\FocusTool.Ui\FocusTool.Ui.csproj
 仓库提供统一的发布脚本：
 
 ```powershell
-.\Build-Release.ps1 -Version 0.3.0
+.\Build-Release.ps1 -Version 0.4.0
 ```
 
 脚本会生成自包含的 Windows x64 单文件程序，并将运行时必须独立存在的 `FocusTool.Hook.dll` 一并打包。最终压缩包只包含：

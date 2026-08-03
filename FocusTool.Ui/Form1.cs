@@ -1,3 +1,5 @@
+using System.Drawing;
+
 namespace FocusTool.Ui;
 
 public partial class Form1 : Form
@@ -16,6 +18,8 @@ public partial class Form1 : Form
     {
         InitializeComponent();
         ApplyApplicationIcon();
+        headerPanel.Paint += HeaderPanel_Paint;
+        settingsAlwaysOnTopLabel.Click += (_, _) => alwaysOnTopToggle.Checked = !alwaysOnTopToggle.Checked;
         _statusTimer.Tick += StatusTimer_Tick;
     }
 
@@ -28,6 +32,12 @@ public partial class Form1 : Form
         }
     }
 
+    private void HeaderPanel_Paint(object? sender, PaintEventArgs e)
+    {
+        using var pen = new Pen(UiTheme.Border);
+        e.Graphics.DrawLine(pen, 0, headerPanel.Height - 1, headerPanel.Width, headerPanel.Height - 1);
+    }
+
     private void Form1_Load(object? sender, EventArgs e)
     {
         var settings = _settingsStore.LoadOrDefault();
@@ -35,7 +45,7 @@ public partial class Form1 : Form
 
         _isApplyingSettings = true;
         TopMost = settings.AlwaysOnTop;
-        alwaysOnTopCheckBox.Checked = settings.AlwaysOnTop;
+        alwaysOnTopToggle.Checked = settings.AlwaysOnTop;
         _isApplyingSettings = false;
 
         _hotKeyService = new HotKeyService(Handle, HotKeyId, settings.Binding);
@@ -118,10 +128,42 @@ public partial class Form1 : Form
     {
         var snapshot = _controller.GetSnapshot();
         var hotKeyText = _hotKeyService?.CurrentBinding.ToDisplayString() ?? "(unavailable)";
-        candidateLabel.Text = $"候选窗口: {snapshot.CandidateWindow.ProcessName} | {snapshot.CandidateWindow.WindowTitle}";
+        var candidate = snapshot.CandidateWindow;
+
+        if (candidate.Handle == IntPtr.Zero)
+        {
+            targetProcessLabel.Text = "等待前台窗口";
+            targetTitleLabel.Text = "切换到目标游戏窗口后锁定";
+            targetMetaLabel.Text = "HWND -- · PID -- · TID --";
+            candidateLabel.Text = "候选窗口: None";
+        }
+        else
+        {
+            targetProcessLabel.Text = candidate.ProcessName;
+            targetTitleLabel.Text = candidate.WindowTitle;
+            targetMetaLabel.Text =
+                $"HWND 0x{candidate.Handle.ToInt64():X} · PID {candidate.ProcessId} · TID {candidate.ThreadId}";
+            candidateLabel.Text = $"候选窗口: {candidate.ProcessName} | {candidate.WindowTitle}";
+        }
+
         hotKeyLabel.Text = _isWaitingForHotKey
-            ? "当前热键: 等待新的组合键... (Esc 取消)"
-            : $"当前热键: {hotKeyText}";
+            ? "等待新的组合键... (Esc 取消)"
+            : hotKeyText;
+
+        var stateText = snapshot.IsEnabled ? "● 保护中 · ENABLED" : "● 待命 · STANDBY";
+        var stateColor = snapshot.IsEnabled ? UiTheme.Success : UiTheme.Muted;
+        enabledStatusLabel.Text = stateText;
+        enabledStatusLabel.ForeColor = stateColor;
+        headerStatusLabel.Text = stateText;
+        headerStatusLabel.ForeColor = stateColor;
+        lastErrorLabel.Text = $"最近状态: {snapshot.LastError}";
+
+        toggleButton.Text = snapshot.IsEnabled ? "关闭当前防失焦" : "锁定当前前台窗口";
+        toggleButton.BackColor = snapshot.IsEnabled ? UiTheme.Danger : UiTheme.Accent;
+        toggleButton.FlatAppearance.MouseOverBackColor =
+            snapshot.IsEnabled ? UiTheme.DangerHover : UiTheme.AccentHover;
+        toggleButton.FlatAppearance.MouseDownBackColor =
+            snapshot.IsEnabled ? UiTheme.DangerHover : UiTheme.AccentHover;
 
         statusTextBox.Text =
             $"Hotkey: {hotKeyText}{Environment.NewLine}" +
@@ -146,14 +188,14 @@ public partial class Form1 : Form
             "Logic: thread hooks + one-shot subclass + AllowFocus channel";
     }
 
-    private void alwaysOnTopCheckBox_CheckedChanged(object? sender, EventArgs e)
+    private void alwaysOnTopToggle_CheckedChanged(object? sender, EventArgs e)
     {
         if (_isApplyingSettings)
         {
             return;
         }
 
-        TopMost = alwaysOnTopCheckBox.Checked;
+        TopMost = alwaysOnTopToggle.Checked;
 
         try
         {
