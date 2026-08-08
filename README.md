@@ -1,5 +1,7 @@
 # 防止游戏失焦工具 / Game Focus Guard
 
+搜索关键词：防止游戏失焦工具、游戏失焦工具、游戏防失焦、游戏窗口失焦、防止游戏切后台暂停、游戏后台暂停、游戏焦点保护工具、游戏焦点保护、保持游戏窗口焦点、游戏窗口焦点保护、游戏一失焦就暂停、游戏切后台暂停怎么办、游戏切窗口就暂停怎么解决、地平线6失焦暂停、地平线6切后台暂停、地平线6切窗口暂停、多显示器游戏防失焦、全局热键锁定焦点、游戏窗口置顶、Game Focus Guard、防止游戏失焦工具。prevent game focus loss tool, game focus loss tool, game focus guard, game anti focus loss, game window focus loss, prevent game background pause, game background pause, game focus protection tool, game focus protection, keep game window focused, game window focus protection, game pauses when unfocused, game pauses in background, game pauses when switching windows, Forza Horizon 6 focus loss, FH6 pause when unfocused, multi-monitor game focus, global hotkey focus lock, window always on top, Game Focus Guard.
+
 `Game Focus Guard` 是一个本地 Windows 小工具，用来降低游戏窗口失去焦点、切到后台后暂停，或者因焦点变化导致交互异常的影响。
 
 它主要面向需要保持窗口焦点的游戏场景，例如 **《地平线6》**、多显示器游戏环境，以及容易因为误点、切窗或后台操作而中断的桌面游戏。
